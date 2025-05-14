@@ -5,12 +5,8 @@ import scheduler_utils as scheduler
 import Genetic
 import random
 random.seed(42)
-<<<<<<< HEAD
 def pso_main(particles_num=30, max_iterations=2000, w_start=0.9,w_end=0.4, c1=1, c2=2):
-=======
-def pso_main(particles_num=30, max_iterations=1000, w_start=0.9,w_end=0.4, c1=1, c2=2):
     x = int(input("select 1 or 2 "))
->>>>>>> 9337fb02f7d3357e98fbf399f75a7755c5bcfdba
     swarm = [
         PSO.Particle(
             scheduler.generate_Schedule,
@@ -42,7 +38,7 @@ def pso_main(particles_num=30, max_iterations=1000, w_start=0.9,w_end=0.4, c1=1,
             ncr,nmr = genetic.update_rates(iteration,max_iterations)
             if ncr > random.random():
                 other_particle = genetic.tournament_selection(others)
-                new_particle =genetic.crossover(particle.position,other_particle)
+                new_particle =genetic.uniform_crossover(particle.position,other_particle)
                 particle.update(new_particle)
             
             if nmr > random.random():

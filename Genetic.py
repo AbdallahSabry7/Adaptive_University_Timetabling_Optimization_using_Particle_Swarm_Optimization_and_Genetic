@@ -1,5 +1,5 @@
 import random
-import scheduler_utils as schedule
+import scheduler_utils as scheduler
 import PSO
 
 class Genetic:
@@ -10,7 +10,7 @@ class Genetic:
     def __iter__(self):
         pass
 
-    def crossover(self, chromosome1, chromosome2):
+    def uniform_crossover(self, chromosome1, chromosome2):
         new_chromosome = []
         for i in range(len(chromosome1)):
             if random.random() < 0.5:
@@ -18,6 +18,12 @@ class Genetic:
             else:
                 new_chromosome.append(chromosome2[i])
         return new_chromosome
+    
+    def one_point_crossover(self, chromosome1, chromosome2):
+        crossover_point = random.randint(0, len(chromosome1) - 1)
+        new_chromosome = chromosome1[:crossover_point] + chromosome2[crossover_point:]
+        return new_chromosome
+    
     
     def sector_based_crossover(self, chromosome1, chromosome2):
         new_chromosome = chromosome1[:]  
@@ -43,7 +49,7 @@ class Genetic:
 
         
     def mutation(self, chromosome, mr):
-        new_values = schedule.encode_Schedule(schedule.generate_Schedule())
+        new_values = scheduler.encode_Schedule(scheduler.generate_Schedule())
         for i in range(len(chromosome)):
             if mr > random.random():
                 chromosome[i] = new_values[i]
@@ -91,7 +97,7 @@ class Genetic:
         if random.random() > mr:
             return chromosome
 
-        decoded_chromosome = schedule.decode_Schedule(base_schedule, chromosome)
+        decoded_chromosome = scheduler.decode_Schedule(base_schedule, chromosome)
 
         worst_gene_index = max(
             range(len(decoded_chromosome)),
@@ -101,12 +107,14 @@ class Genetic:
         start = worst_gene_index * 3
         end = start + 3
 
-        random_schedule = schedule.generate_Schedule()
-        random_encoded = schedule.encode_Schedule(random_schedule)
+        random_schedule = scheduler.generate_Schedule()
+        random_encoded = scheduler.encode_Schedule(random_schedule)
 
         new_chromosome = chromosome.copy()
         new_chromosome[start:end] = random_encoded[start:end] 
         return new_chromosome
+    
+    
 
 
 
