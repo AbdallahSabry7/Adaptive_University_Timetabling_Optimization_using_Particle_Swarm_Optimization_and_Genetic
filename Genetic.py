@@ -18,7 +18,7 @@ class Genetic:
             else:
                 new_chromosome.append(chromosome2[i])
         return new_chromosome
-    
+
     def one_point_crossover(self, chromosome1, chromosome2):
         crossover_point = random.randint(0, len(chromosome1) - 1)
         new_chromosome = chromosome1[:crossover_point] + chromosome2[crossover_point:]
@@ -48,10 +48,10 @@ class Genetic:
         return new_chromosome
 
         
-    def mutation(self, chromosome, mr):
+    def  random_reinitialization_mutaion(self, chromosome, mr):
         new_values = scheduler.encode_Schedule(scheduler.generate_Schedule())
         for i in range(len(chromosome)):
-            if mr > random.random():
+            if random.random() > random.random():
                 chromosome[i] = new_values[i]
         return chromosome
 
@@ -93,10 +93,7 @@ class Genetic:
 
         return score
     
-    def worst_gene_with_random_gene_mutation(self, chromosome, base_schedule, mr):
-        if random.random() > mr:
-            return chromosome
-
+    def worst_gene_with_random_gene_mutation(self, chromosome, base_schedule):
         decoded_chromosome = scheduler.decode_Schedule(base_schedule, chromosome)
 
         worst_gene_index = max(
@@ -116,5 +113,41 @@ class Genetic:
     
     
 
+    def swap_class_assignments_mutation(self,chromosome):
+        random_schedule = schedule.generate_Schedule()
+        new_chromosome = schedule.encode_Schedule(random_schedule)
+        num_classes = len(chromosome) // 3
 
+        idx1 = random.randint(0, num_classes - 1)
+        idx2 = random.randint(0, num_classes - 1)
+        while idx1 == idx2:
+            idx2 = random.randint(0, num_classes - 1)
 
+        start1, start2 = idx1 * 3, idx2 * 3
+
+        for i in range(3):
+            chromosome[start1 + i], chromosome[start2 + i] = (
+                new_chromosome[start2 + i],
+                new_chromosome[start1 + i],
+            )
+
+        return chromosome
+
+    def field_mutation(self, chromosome):
+        random_schedule = schedule.generate_Schedule()
+        new_chromosome = schedule.encode_Schedule(random_schedule)
+        num_classes = len(chromosome) // 3
+
+        class_idx = random.randint(0, num_classes - 1)
+        gene_start = class_idx * 3
+
+        field = random.randint(0, 2)
+
+        if field == 0:
+            chromosome[gene_start] = new_chromosome[gene_start]
+        elif field == 1:
+            chromosome[gene_start + 1] = new_chromosome[gene_start + 1]
+        elif field == 2:
+            chromosome[gene_start + 2] = new_chromosome[gene_start + 2]
+
+        return chromosome
