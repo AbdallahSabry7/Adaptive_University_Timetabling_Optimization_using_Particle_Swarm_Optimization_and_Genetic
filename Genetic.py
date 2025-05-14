@@ -3,7 +3,7 @@ import scheduler_utils as scheduler
 import PSO
 
 class Genetic:
-    def __init__(self,cr=0.9, mr=0.3):
+    def __init__(self,cr=0.9, mr=0.2):
         self.cr = cr
         self.mr = mr
     
@@ -23,6 +23,20 @@ class Genetic:
         crossover_point = random.randint(0, len(chromosome1) - 1)
         new_chromosome = chromosome1[:crossover_point] + chromosome2[crossover_point:]
         return new_chromosome
+    
+
+    def two_point_crossover(self, chromosome1, chromosome2):
+        point1 = random.randint(0, len(chromosome1) - 1)
+        point2 = random.randint(0, len(chromosome1) - 1)
+
+        if point1 > point2:
+            point1, point2 = point2, point1
+
+        new_chromosome = (
+            chromosome1[:point1] + chromosome2[point1:point2] + chromosome1[point2:]
+        )
+        return new_chromosome
+    
     
     def sector_based_crossover(self, chromosome1, chromosome2):
         new_chromosome = chromosome1[:]  
