@@ -6,7 +6,7 @@ import Genetic
 import random
 random.seed(42)
 def pso_main(particles_num=30, max_iterations=1000, w_start=0.9,w_end=0.4, c1=1, c2=2):
-    x = int(input("select 1 or 2 "))
+    x = int(input("select 1 or 2 or 3 or 4 for mutation type: \n1. Worst Gene with Random Gene Mutation\n2. Random Reinitialization Mutation\n3. Swap Class Assignments Mutation\n4. Field Mutation\n"))
     swarm = [
         PSO.Particle(
             scheduler.generate_Schedule,
@@ -42,13 +42,15 @@ def pso_main(particles_num=30, max_iterations=1000, w_start=0.9,w_end=0.4, c1=1,
                 particle.update(new_particle)
             
             if nmr > random.random():
-
                 match x:
                     case 1:
-                        new_particle = genetic.worst_gene_with_random_gene_mutation(particle.position,particle.base_schedule, nmr)
+                        new_particle = genetic.worst_gene_with_random_gene_mutation(particle.position,particle.base_schedule)
                     case 2:
-                        new_particle = genetic.mutation(particle.position, nmr)   
-                    
+                        new_particle = genetic.random_reinitialization_mutaion(particle.position, nmr)   
+                    case 3:
+                        new_particle = genetic.swap_class_assignments_mutation(particle.position)
+                    case 4:
+                        new_particle = genetic.field_mutation(particle.position)
                 particle.update(new_particle)
 
             if particle.fitness > global_best_fitness:
