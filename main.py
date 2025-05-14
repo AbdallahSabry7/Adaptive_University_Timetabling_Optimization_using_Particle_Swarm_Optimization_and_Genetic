@@ -5,7 +5,7 @@ import scheduler_utils as scheduler
 import Genetic
 import random
 random.seed(42)
-def pso_main(particles_num=30, max_iterations=1000, w_start=0.9,w_end=0.4, c1=1, c2=2):
+def pso_main(particles_num=30, max_iterations=2000, w_start=0.9,w_end=0.4, c1=1, c2=2):
     swarm = [
         PSO.Particle(
             scheduler.generate_Schedule,
