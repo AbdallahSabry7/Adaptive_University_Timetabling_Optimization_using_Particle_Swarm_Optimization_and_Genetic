@@ -125,7 +125,7 @@ def hybrid_main(max_iterations, particles_num, Mutation_Type, crossover_Type, Se
     return best_schedule, global_best_fitness,global_fitness_overtime
 
 
-def genetic_main(max_iterations, population_size, Mutation_Type, crossover_Type, Selection_Type, mutation_rate, crossover_rate):
+def genetic_main(max_iterations, population_size, Mutation_Type, crossover_Type, Selection_Type, mutation_rate, crossover_rate, survival_type):
     genetic = Genetic.Genetic(mutation_rate, crossover_rate)
     base_schedule = scheduler.generate_Schedule()
     population = genetic.generate_population(base_schedule, population_size)
@@ -183,20 +183,35 @@ def genetic_main(max_iterations, population_size, Mutation_Type, crossover_Type,
                         new_particle = genetic.field_mutation(individual.position)
                 individual.update(new_particle)
 
-
-        
-        elite_count = max(1, int(0.1 * population_size))
-        elite_individuals = sorted(population, key=lambda x: x.fitness, reverse=True)[:elite_count]
-        worst_individuals_indices = sorted(range(len(new_population)), key=lambda i: new_population[i].fitness)[:elite_count]
-        for idx, elite in zip(worst_individuals_indices, elite_individuals):
-            new_population[idx] = copy.deepcopy(elite)
-            
+        combined = population + new_population
+        if survival_type == "elitism":
+            elite_count = max(1, int(0.1 * population_size))
+            elite_individuals = sorted(population, key=lambda x: x.fitness, reverse=True)[:elite_count]
+            worst_individuals_indices = sorted(range(len(new_population)), key=lambda i: new_population[i].fitness)[:elite_count]
+            for idx, elite in zip(worst_individuals_indices, elite_individuals):
+                new_population[idx] = copy.deepcopy(elite)
+        elif survival_type == "tournament":
+            tournament_size = 3
+            survivors = []
+            for _ in range(population_size):
+                selected = random.sample(combined, tournament_size)
+                winner = max(selected, key=lambda x: x.fitness)
+                survivors.append(copy.deepcopy(winner))
+            new_population = survivors
+        elif survival_type == "ranked":
+            sorted_population = sorted(combined, key=lambda x: x.fitness, reverse=True)
+            probabilities = [1 / (i + 1) for i in range(len(sorted_population))]
+            total = sum(probabilities)
+            probabilities = [p / total for p in probabilities]
+            new_population = random.choices(sorted_population, weights=probabilities, k=population_size)
+        elif survival_type == "generational":
+            new_population = sorted(new_population, key=lambda x: x.fitness, reverse=True)[:population_size]
+                
 
 
         population = new_population
         print(f"Iteration {iteration + 1} - Best Fitness: {best_fitness}")
         global_fitness_overtime.append(best_fitness)
-        
 
     best_schedule = scheduler.decode_Schedule(best_schedule.base_schedule, best_schedule.position)
     return best_schedule, best_fitness, global_fitness_overtime
