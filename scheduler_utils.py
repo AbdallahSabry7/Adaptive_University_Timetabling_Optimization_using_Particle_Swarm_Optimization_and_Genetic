@@ -2,6 +2,8 @@ import Data
 import models
 import random
 import logging
+import heapq
+
 
 # # Configure logging
 # logging.basicConfig(
@@ -28,6 +30,170 @@ def generate_Schedule():
             newClass.set_instructor(random.choice(course.get_instructors()))
 
             schedule.append(newClass)
+
+    return schedule
+
+
+import random
+
+def generate_heuristic_schedule():
+    class_id = 0
+    schedule = []
+
+    room_usage = {}         
+    instructor_usage = {}   
+    dept_time_usage = {}     
+
+    # Sort courses by number of students descending (but shuffle within same size)
+    courses = [(dept, course) for dept in Data.departments for course in dept.get_courses()]
+    courses.sort(key=lambda x: -x[1].get_num_of_students())
+    
+    i = 0
+    while i < len(courses):
+        j = i + 1
+        while j < len(courses) and courses[j][1].get_num_of_students() == courses[i][1].get_num_of_students():
+            j += 1
+        random.shuffle(courses[i:j])
+        i = j
+
+    for dept, course in courses:
+        new_class = models.Class(class_id, dept, course)
+        class_id += 1
+
+        assigned = False
+
+        # Randomize time and room order each time
+        meeting_times = random.sample(Data.Meeting_Times, len(Data.Meeting_Times))
+        rooms = sorted(Data.Rooms, key=lambda r: r.get_seatingCapacity())
+        random.shuffle(rooms)
+
+        instructors = course.get_instructors()
+        random.shuffle(instructors)
+
+        for time in meeting_times:
+            for room in rooms:
+                if room.get_seatingCapacity() < course.get_num_of_students():
+                    continue
+
+                for instructor in instructors:
+                    if (room, time) in room_usage:
+                        continue
+                    if (instructor, time) in instructor_usage:
+                        continue
+                    if (dept, time) in dept_time_usage:
+                        continue
+
+                    # 20% chance to skip this perfect match (adds exploration)
+                    if random.random() < 0.2:
+                        continue
+
+                    new_class.set_meetingTime(time)
+                    new_class.set_room(room)
+                    new_class.set_instructor(instructor)
+
+                    room_usage[(room, time)] = True
+                    instructor_usage[(instructor, time)] = True
+                    dept_time_usage[(dept, time)] = True
+
+                    schedule.append(new_class)
+                    assigned = True
+                    break
+
+                if assigned:
+                    break
+            if assigned:
+                break
+
+        # Fallback random assignment
+        if not assigned:
+            new_class.set_meetingTime(random.choice(Data.Meeting_Times))
+            new_class.set_room(random.choice(Data.Rooms))
+            new_class.set_instructor(random.choice(instructors))
+            schedule.append(new_class)
+
+    return schedule
+
+
+
+def generate_Schedule2():
+    class_id = 0
+    schedule = []
+
+    for dept in Data.departments:
+        courses = dept.get_courses()
+        for course in courses:
+            new_class = models.Class(class_id, dept, course)
+            class_id += 1
+
+            # Randomly choose a meeting time and room with capacity constraints considered
+            possible_rooms = [room for room in Data.Rooms 
+                            if room.get_seatingCapacity() >= course.get_num_of_students()]
+            chosen_room = random.choice(possible_rooms) if possible_rooms else random.choice(Data.Rooms)
+
+            new_class.set_room(chosen_room)
+            new_class.set_meetingTime(random.choice(Data.Meeting_Times))
+            new_class.set_instructor(random.choice(course.get_instructors()))
+
+            schedule.append(new_class)
+
+    return schedule
+
+
+def choose_weighted_room(course, meeting_time, room_usage):
+    rooms = Data.Rooms
+    weights = []
+
+    for room in rooms:
+        # Penalize rooms that are too small
+        if room.get_seatingCapacity() < course.get_num_of_students():
+            weights.append(0.1)
+        else:
+            # Less used rooms get higher weight
+            usage_count = room_usage.get((room, meeting_time), 0)
+            capacity_surplus = room.get_seatingCapacity() - course.get_num_of_students()
+            weight = max(1.0 / (1 + usage_count), 0.1) * (1.0 / (1 + capacity_surplus))
+            weights.append(weight)
+
+    return random.choices(rooms, weights=weights, k=1)[0]
+
+def choose_weighted_instructor(course, meeting_time, instructor_usage):
+    instructors = course.get_instructors()
+    weights = []
+
+    for inst in instructors:
+        usage_count = instructor_usage.get((inst, meeting_time), 0)
+        weight = max(1.0 / (1 + usage_count), 0.1)
+        weights.append(weight)
+
+    return random.choices(instructors, weights=weights, k=1)[0]
+
+def Weighted_generate_Schedule():
+    class_id = 0
+    schedule = []
+
+    room_usage = {}
+    instructor_usage = {}
+
+    for dept in Data.departments:
+        courses = dept.get_courses()
+        for course in courses:
+            new_class = models.Class(class_id, dept, course)
+            class_id += 1
+
+            meeting_time = random.choice(Data.Meeting_Times)
+
+            room = choose_weighted_room(course, meeting_time, room_usage)
+            instructor = choose_weighted_instructor(course, meeting_time, instructor_usage)
+
+            new_class.set_meetingTime(meeting_time)
+            new_class.set_room(room)
+            new_class.set_instructor(instructor)
+
+            # Update usage trackers
+            room_usage[(room, meeting_time)] = room_usage.get((room, meeting_time), 0) + 1
+            instructor_usage[(instructor, meeting_time)] = instructor_usage.get((instructor, meeting_time), 0) + 1
+
+            schedule.append(new_class)
 
     return schedule
 
