@@ -70,3 +70,43 @@ class Genetic:
         nmr = self.mr * ((t_max - t) / t_max)
         return ncr, nmr
     
+    def conflict_score(self,class_gene,all_classes):
+        score = 0
+        for other in all_classes:
+            if other == class_gene:
+                continue
+            if class_gene.get_meetingTime() == other.get_meetingTime():
+                if class_gene.get_room() == other.get_room():
+                    score += 3
+                if class_gene.get_instructor() == other.get_instructor():
+                    score += 2
+                if class_gene.get_dept() == other.get_dept():
+                    score += 1
+        if class_gene.get_course().get_num_of_students() > class_gene.get_room().get_seatingCapacity():
+            score += 5
+
+        return score
+    
+    def worst_gene_with_random_gene_mutation(self, chromosome, base_schedule, mr):
+        if random.random() > mr:
+            return chromosome
+
+        decoded_chromosome = schedule.decode_Schedule(base_schedule, chromosome)
+
+        worst_gene_index = max(
+            range(len(decoded_chromosome)),
+            key=lambda i: self.conflict_score(decoded_chromosome[i], decoded_chromosome)
+        )
+
+        start = worst_gene_index * 3
+        end = start + 3
+
+        random_schedule = schedule.generate_Schedule()
+        random_encoded = schedule.encode_Schedule(random_schedule)
+
+        new_chromosome = chromosome.copy()
+        new_chromosome[start:end] = random_encoded[start:end] 
+        return new_chromosome
+
+
+
