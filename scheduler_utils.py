@@ -44,7 +44,7 @@ def generate_heuristic_schedule():
     instructor_usage = {}   
     dept_time_usage = {}     
 
-    # Sort courses by number of students descending (but shuffle within same size)
+    
     courses = [(dept, course) for dept in Data.departments for course in dept.get_courses()]
     courses.sort(key=lambda x: -x[1].get_num_of_students())
     
@@ -62,7 +62,6 @@ def generate_heuristic_schedule():
 
         assigned = False
 
-        # Randomize time and room order each time
         meeting_times = random.sample(Data.Meeting_Times, len(Data.Meeting_Times))
         rooms = sorted(Data.Rooms, key=lambda r: r.get_seatingCapacity())
         random.shuffle(rooms)
@@ -83,7 +82,7 @@ def generate_heuristic_schedule():
                     if (dept, time) in dept_time_usage:
                         continue
 
-                    # 20% chance to skip this perfect match (adds exploration)
+
                     if random.random() < 0.2:
                         continue
 
@@ -104,7 +103,7 @@ def generate_heuristic_schedule():
             if assigned:
                 break
 
-        # Fallback random assignment
+
         if not assigned:
             new_class.set_meetingTime(random.choice(Data.Meeting_Times))
             new_class.set_room(random.choice(Data.Rooms))
@@ -125,7 +124,7 @@ def generate_Schedule2():
             new_class = models.Class(class_id, dept, course)
             class_id += 1
 
-            # Randomly choose a meeting time and room with capacity constraints considered
+
             possible_rooms = [room for room in Data.Rooms 
                             if room.get_seatingCapacity() >= course.get_num_of_students()]
             chosen_room = random.choice(possible_rooms) if possible_rooms else random.choice(Data.Rooms)
@@ -144,11 +143,9 @@ def choose_weighted_room(course, meeting_time, room_usage):
     weights = []
 
     for room in rooms:
-        # Penalize rooms that are too small
         if room.get_seatingCapacity() < course.get_num_of_students():
             weights.append(0.1)
         else:
-            # Less used rooms get higher weight
             usage_count = room_usage.get((room, meeting_time), 0)
             capacity_surplus = room.get_seatingCapacity() - course.get_num_of_students()
             weight = max(1.0 / (1 + usage_count), 0.1) * (1.0 / (1 + capacity_surplus))
@@ -189,7 +186,6 @@ def Weighted_generate_Schedule():
             new_class.set_room(room)
             new_class.set_instructor(instructor)
 
-            # Update usage trackers
             room_usage[(room, meeting_time)] = room_usage.get((room, meeting_time), 0) + 1
             instructor_usage[(instructor, meeting_time)] = instructor_usage.get((instructor, meeting_time), 0) + 1
 

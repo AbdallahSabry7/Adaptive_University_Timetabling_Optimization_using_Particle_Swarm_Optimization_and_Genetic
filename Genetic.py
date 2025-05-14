@@ -3,6 +3,8 @@ import scheduler_utils as scheduler
 import PSO
 import copy
 
+
+
 class Genetic:
     def __init__(self,mr,cr):
         self.cr = cr
@@ -10,6 +12,23 @@ class Genetic:
     
     def __iter__(self):
         pass
+    
+    def generate_population(self, base_schedule, population_size):
+        population = []
+        for _ in range(population_size):
+            schedule = scheduler.generate_Schedule()
+            encoded_schedule = scheduler.encode_Schedule(schedule)
+            fitness = scheduler.fitness_function(encoded_schedule, base_schedule)
+            individual = PSO.Particle(
+                scheduler.generate_Schedule,
+                scheduler.encode_Schedule,
+                scheduler.decode_Schedule,
+                scheduler.fitness_function
+            )
+            individual.position = encoded_schedule
+            individual.fitness = fitness
+            population.append(individual)
+        return population
     
     def uniform_crossover(self, chromosome1, chromosome2):
         new_chromosome = []

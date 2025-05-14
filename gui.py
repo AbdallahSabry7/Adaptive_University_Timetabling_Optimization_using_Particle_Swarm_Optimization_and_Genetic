@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (
     QMessageBox, QComboBox, QFormLayout, QGroupBox, QScrollArea, QHBoxLayout
 )
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
-from main import pso_main
+from main import hybrid_main
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
@@ -54,7 +54,7 @@ class PSOThread(QThread):
 
     def run(self):
         try:
-            best_schedule, best_fitness,global_fitness_overtime = pso_main(
+            best_schedule, best_fitness,global_fitness_overtime = hybrid_main(
                 self.iterations, self.population_size, self.mutation_type, self.cross_type,
                 self.Selection_Type, self.w_start, self.c1, self.c2,
                 self.w_end, self.mutation_rate, self.crossover_rate
@@ -71,7 +71,7 @@ class TimetableOptimizerApp(QWidget):
 
     def init_ui(self):
         self.setWindowTitle("Timetable Optimizer - PSO")
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(200, 200, 1600, 1200)
 
         scroll = QScrollArea(self)
         scroll.setWidgetResizable(True)
