@@ -1,5 +1,5 @@
 import random
-import scheduler_utils as schedule
+import scheduler_utils as scheduler
 import PSO
 
 class Genetic:
@@ -10,7 +10,7 @@ class Genetic:
     def __iter__(self):
         pass
 
-    def crossover(self, chromosome1, chromosome2):
+    def uniform_crossover(self, chromosome1, chromosome2):
         new_chromosome = []
         for i in range(len(chromosome1)):
             if random.random() < 0.5:
@@ -18,13 +18,12 @@ class Genetic:
             else:
                 new_chromosome.append(chromosome2[i])
         return new_chromosome
+
+    def one_point_crossover(self, chromosome1, chromosome2):
+        crossover_point = random.randint(0, len(chromosome1) - 1)
+        new_chromosome = chromosome1[:crossover_point] + chromosome2[crossover_point:]
+        return new_chromosome
     
-    def  random_reinitialization_mutaion(self, chromosome, mr):
-        new_values = schedule.encode_Schedule(schedule.generate_Schedule())
-        for i in range(len(chromosome)):
-            if random.random() > random.random():
-                chromosome[i] = new_values[i]
-        return chromosome
     def sector_based_crossover(self, chromosome1, chromosome2):
         new_chromosome = chromosome1[:]  
 
@@ -46,7 +45,13 @@ class Genetic:
             new_chromosome[:sector_end_gene] = chromosome2[:sector_end_gene]
 
         return new_chromosome
-
+        
+    def  random_reinitialization_mutaion(self, chromosome, mr):
+        new_values = scheduler.encode_Schedule(scheduler.generate_Schedule())
+        for i in range(len(chromosome)):
+            if random.random() > random.random():
+                chromosome[i] = new_values[i]
+        return chromosome
 
     def ranked_selection(self,population,selection_pressure=1.5, maximize=True):
         sorted_pop = sorted(population,key=lambda p: p.get_fitness(),reverse=maximize)
@@ -87,7 +92,7 @@ class Genetic:
         return score
     
     def worst_gene_with_random_gene_mutation(self, chromosome, base_schedule):
-        decoded_chromosome = schedule.decode_Schedule(base_schedule, chromosome)
+        decoded_chromosome = scheduler.decode_Schedule(base_schedule, chromosome)
 
         worst_gene_index = max(
             range(len(decoded_chromosome)),
@@ -97,16 +102,18 @@ class Genetic:
         start = worst_gene_index * 3
         end = start + 3
 
-        random_schedule = schedule.generate_Schedule()
-        random_encoded = schedule.encode_Schedule(random_schedule)
+        random_schedule = scheduler.generate_Schedule()
+        random_encoded = scheduler.encode_Schedule(random_schedule)
 
         new_chromosome = chromosome.copy()
         new_chromosome[start:end] = random_encoded[start:end] 
         return new_chromosome
+    
+    
 
     def swap_class_assignments_mutation(self,chromosome):
-        random_schedule = schedule.generate_Schedule()
-        new_chromosome = schedule.encode_Schedule(random_schedule)
+        random_schedule = scheduler.generate_Schedule()
+        new_chromosome = scheduler.encode_Schedule(random_schedule)
         num_classes = len(chromosome) // 3
 
         idx1 = random.randint(0, num_classes - 1)
@@ -125,8 +132,8 @@ class Genetic:
         return chromosome
 
     def field_mutation(self, chromosome):
-        random_schedule = schedule.generate_Schedule()
-        new_chromosome = schedule.encode_Schedule(random_schedule)
+        random_schedule = scheduler.generate_Schedule()
+        new_chromosome = scheduler.encode_Schedule(random_schedule)
         num_classes = len(chromosome) // 3
 
         class_idx = random.randint(0, num_classes - 1)

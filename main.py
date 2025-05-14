@@ -38,7 +38,7 @@ def pso_main(particles_num=30, max_iterations=1000, w_start=0.9,w_end=0.4, c1=1,
             ncr,nmr = genetic.update_rates(iteration,max_iterations)
             if ncr > random.random():
                 other_particle = genetic.tournament_selection(others)
-                new_particle =genetic.crossover(particle.position,other_particle)
+                new_particle =genetic.uniform_crossover(particle.position,other_particle)
                 particle.update(new_particle)
             
             if nmr > random.random():
