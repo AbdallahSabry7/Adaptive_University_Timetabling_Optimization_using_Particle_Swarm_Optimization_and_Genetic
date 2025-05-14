@@ -114,8 +114,8 @@ class Genetic:
     
 
     def swap_class_assignments_mutation(self,chromosome):
-        random_schedule = schedule.generate_Schedule()
-        new_chromosome = schedule.encode_Schedule(random_schedule)
+        random_schedule = scheduler.generate_Schedule()
+        new_chromosome = scheduler.encode_Schedule(random_schedule)
         num_classes = len(chromosome) // 3
 
         idx1 = random.randint(0, num_classes - 1)
@@ -134,8 +134,8 @@ class Genetic:
         return chromosome
 
     def field_mutation(self, chromosome):
-        random_schedule = schedule.generate_Schedule()
-        new_chromosome = schedule.encode_Schedule(random_schedule)
+        random_schedule = scheduler.generate_Schedule()
+        new_chromosome = scheduler.encode_Schedule(random_schedule)
         num_classes = len(chromosome) // 3
 
         class_idx = random.randint(0, num_classes - 1)
