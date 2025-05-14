@@ -19,9 +19,12 @@ class Genetic:
                 new_chromosome.append(chromosome2[i])
         return new_chromosome
     
-<<<<<<< HEAD
     def  random_reinitialization_mutaion(self, chromosome, mr):
-=======
+        new_values = schedule.encode_Schedule(schedule.generate_Schedule())
+        for i in range(len(chromosome)):
+            if random.random() > random.random():
+                chromosome[i] = new_values[i]
+        return chromosome
     def sector_based_crossover(self, chromosome1, chromosome2):
         new_chromosome = chromosome1[:]  
 
@@ -44,14 +47,6 @@ class Genetic:
 
         return new_chromosome
 
-        
-    def mutation(self, chromosome, mr):
->>>>>>> 02bac780d14ad58a3743b3bb017cbc1b8b0730ec
-        new_values = schedule.encode_Schedule(schedule.generate_Schedule())
-        for i in range(len(chromosome)):
-            if random.random() > random.random():
-                chromosome[i] = new_values[i]
-        return chromosome
 
     def ranked_selection(self,population,selection_pressure=1.5, maximize=True):
         sorted_pop = sorted(population,key=lambda p: p.get_fitness(),reverse=maximize)
