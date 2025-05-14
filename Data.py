@@ -1,5 +1,7 @@
 import models
 
+
+# Room data(room name, seating capacity)
 Rooms = [
     models.Room('R1', 25),
     models.Room('R2', 30),
@@ -13,6 +15,7 @@ Rooms = [
     models.Room('R10', 70)
 ]
 
+# Meeting times data(id, time slot)
 Meeting_Times = [
     models.Meeting_Time('MT1', 'Sunday 08:00 - 09:30'),
     models.Meeting_Time('MT2', 'Sunday 09:30 - 11:00'),
@@ -31,6 +34,7 @@ Meeting_Times = [
     models.Meeting_Time('MT15', 'Thursday 11:00 - 12:30')
 ]
 
+# Instructors data(id, name)
 instructors = [
     models.Instructor('I1', 'ABDALLAH'),
     models.Instructor('I2', 'Sara'),
@@ -49,6 +53,7 @@ instructors = [
     models.Instructor('I15', 'Tamer')
 ]
 
+# Courses data(course id, course name, number of students, list of instructors)
 Courses = [
     models.Course('C1', 'Math', 30, [instructors[0], instructors[1]]),
     models.Course('C2', 'Physics', 40, [instructors[2], instructors[3]]),
@@ -72,6 +77,7 @@ Courses = [
     models.Course('C20', 'Reinforcement Learning', 45, [instructors[7], instructors[8]])
 ]
 
+# Departments data(department name, list of courses)
 departments = [
     models.Department('CS', [Courses[0], Courses[1], Courses[6], Courses[10]]),
     models.Department('AI', [Courses[2], Courses[3], Courses[4], Courses[18]]),

@@ -5,8 +5,16 @@ import scheduler_utils as scheduler
 import Genetic
 import random
 random.seed(42)
+<<<<<<< HEAD
+def pso_main(particles_num=30, max_iterations=2000, w_start=0.9,w_end=0.4, c1=1, c2=2):
+=======
 def pso_main(particles_num=30, max_iterations=1000, w_start=0.9,w_end=0.4, c1=1, c2=2):
+<<<<<<< HEAD
     x = int(input("select 1 or 2 or 3 or 4 for mutation type: \n1. Worst Gene with Random Gene Mutation\n2. Random Reinitialization Mutation\n3. Swap Class Assignments Mutation\n4. Field Mutation\n"))
+=======
+    x = int(input("select 1 or 2 "))
+>>>>>>> 9337fb02f7d3357e98fbf399f75a7755c5bcfdba
+>>>>>>> 02bac780d14ad58a3743b3bb017cbc1b8b0730ec
     swarm = [
         PSO.Particle(
             scheduler.generate_Schedule,

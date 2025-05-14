@@ -1,6 +1,7 @@
 import random
 import scheduler_utils as schedule
 import PSO
+
 class Genetic:
     def __init__(self,cr=0.9, mr=0.3):
         self.cr = cr
@@ -17,9 +18,35 @@ class Genetic:
             else:
                 new_chromosome.append(chromosome2[i])
         return new_chromosome
-
     
+<<<<<<< HEAD
     def  random_reinitialization_mutaion(self, chromosome, mr):
+=======
+    def sector_based_crossover(self, chromosome1, chromosome2):
+        new_chromosome = chromosome1[:]  
+
+        gene_size = 3  
+        num_classes = len(chromosome1) // gene_size
+
+        
+        sector_length_classes = random.randint(1, num_classes)  
+        sector_start_class = random.randint(0, num_classes - 1)
+        sector_end_class = (sector_start_class + sector_length_classes) % num_classes
+
+        sector_start_gene = sector_start_class * gene_size
+        sector_end_gene = sector_end_class * gene_size
+
+        if sector_start_gene < sector_end_gene:
+            new_chromosome[sector_start_gene:sector_end_gene] = chromosome2[sector_start_gene:sector_end_gene]
+        else:
+            new_chromosome[sector_start_gene:] = chromosome2[sector_start_gene:]
+            new_chromosome[:sector_end_gene] = chromosome2[:sector_end_gene]
+
+        return new_chromosome
+
+        
+    def mutation(self, chromosome, mr):
+>>>>>>> 02bac780d14ad58a3743b3bb017cbc1b8b0730ec
         new_values = schedule.encode_Schedule(schedule.generate_Schedule())
         for i in range(len(chromosome)):
             if random.random() > random.random():
