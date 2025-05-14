@@ -1,6 +1,17 @@
 import Data
 import models
 import random
+import logging
+
+# # Configure logging
+# logging.basicConfig(
+#     filename='fitness_log.txt',   # Log file name
+#     filemode='w',                 # Overwrite each run
+#     level=logging.INFO,           # Could also use DEBUG
+#     format='%(levelname)s:%(message)s'
+# )
+
+
 
 def generate_Schedule():
     classNumb = 0
@@ -32,7 +43,7 @@ def fitness_function(position,base_schedule):
             penalties += 5
 
         unused = class1.get_room().get_seatingCapacity() - class1.get_course().get_num_of_students()
-        if unused > 10:
+        if unused > 15:
             penalties += 1
 
         for j in range(i + 1, len(schedule)):

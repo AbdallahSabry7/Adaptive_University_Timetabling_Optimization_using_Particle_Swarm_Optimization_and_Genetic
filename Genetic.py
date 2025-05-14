@@ -1,6 +1,7 @@
 import random
 import scheduler_utils as scheduler
 import PSO
+import copy
 
 class Genetic:
     def __init__(self,cr=0.9, mr=0.2):
@@ -59,8 +60,38 @@ class Genetic:
             new_chromosome[:sector_end_gene] = chromosome2[:sector_end_gene]
 
         return new_chromosome
-        
-    def  random_reinitialization_mutaion(self, chromosome, mr):
+
+    def conflict_aware_crossover(self, chromosome1, chromosome2, base_schedule):
+        num_classes = len(chromosome1) // 3
+        child = chromosome1.copy()
+
+        # Choose crossover range on class level
+        cxpoint1 = random.randint(0, num_classes - 2)
+        cxpoint2 = random.randint(cxpoint1 + 1, num_classes - 1)
+
+        for i in range(cxpoint1, cxpoint2):
+            start = i * 3
+            end = start + 3
+
+            # Try taking gene from chromosome2
+            candidate_gene = chromosome2[start:end]
+            temp_child = child.copy()
+            temp_child[start:end] = candidate_gene
+
+            decoded_schedule = scheduler.decode_Schedule(base_schedule, temp_child)
+            class_gene = decoded_schedule[i]
+            score = self.conflict_score(class_gene, decoded_schedule)
+
+            if score <= 3:
+                child[start:end] = candidate_gene
+            else:
+                # Keep original gene from chromosome1
+                child[start:end] = chromosome1[start:end]
+
+        return child
+
+
+    def  random_reinitialization_mutation(self, chromosome, mr):
         new_values = scheduler.encode_Schedule(scheduler.generate_Schedule())
         for i in range(len(chromosome)):
             if random.random() > random.random():

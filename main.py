@@ -41,7 +41,7 @@ def pso_main(max_iterations, particles_num, w_start=0.9,w_end=0.4, c1=1, c2=2):
             ncr,nmr = genetic.update_rates(iteration,max_iterations)
             if ncr > random.random():
                 other_particle = genetic.tournament_selection(others)
-                new_particle =genetic.one_point_crossover(particle.position,other_particle)
+                new_particle = genetic.conflict_aware_crossover(particle.position, other_particle, base_schedule=particle.base_schedule)
                 particle.update(new_particle)
             
             if nmr > random.random():
@@ -49,7 +49,7 @@ def pso_main(max_iterations, particles_num, w_start=0.9,w_end=0.4, c1=1, c2=2):
                     case 1:
                         new_particle = genetic.worst_gene_with_random_gene_mutation(particle.position,particle.base_schedule)
                     case 2:
-                        new_particle = genetic.random_reinitialization_mutaion(particle.position, nmr)   
+                        new_particle = genetic.random_reinitialization_mutat1ion(particle.position, nmr)   
                     case 3:
                         new_particle = genetic.swap_class_assignments_mutation(particle.position)
                     case 4:
