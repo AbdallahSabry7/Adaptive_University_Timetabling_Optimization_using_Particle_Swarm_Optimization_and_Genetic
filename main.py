@@ -8,7 +8,7 @@ import random
 # random.seed(1)
 random.seed(2)
 
-def pso_main(particles_num=30, max_iterations=1000, w_start=0.9,w_end=0.4, c1=1, c2=2):
+def pso_main(max_iterations, particles_num, w_start=0.9,w_end=0.4, c1=1, c2=2):
     x = int(input("select 1 or 2 or 3 or 4 for mutation type: \n1. Worst Gene with Random Gene Mutation\n2. Random Reinitialization Mutation\n3. Swap Class Assignments Mutation\n4. Field Mutation\n"))
     swarm = [
         PSO.Particle(
