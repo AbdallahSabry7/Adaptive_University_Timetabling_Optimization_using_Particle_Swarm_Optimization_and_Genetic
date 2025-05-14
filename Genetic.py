@@ -4,13 +4,13 @@ import PSO
 import copy
 
 class Genetic:
-    def __init__(self,cr=0.9, mr=0.2):
+    def __init__(self,mr,cr):
         self.cr = cr
         self.mr = mr
     
     def __iter__(self):
         pass
-
+    
     def uniform_crossover(self, chromosome1, chromosome2):
         new_chromosome = []
         for i in range(len(chromosome1)):
@@ -91,7 +91,7 @@ class Genetic:
         return child
 
 
-    def  random_reinitialization_mutation(self, chromosome, mr):
+    def random_reinitialization_mutation(self, chromosome, mr):
         new_values = scheduler.encode_Schedule(scheduler.generate_Schedule())
         for i in range(len(chromosome)):
             if random.random() > random.random():

@@ -8,8 +8,7 @@ import random
 # random.seed(1)
 random.seed(2)
 
-def pso_main(max_iterations, particles_num, w_start=0.9,w_end=0.4, c1=1, c2=2):
-    x = int(input("select 1 or 2 or 3 or 4 for mutation type: \n1. Worst Gene with Random Gene Mutation\n2. Random Reinitialization Mutation\n3. Swap Class Assignments Mutation\n4. Field Mutation\n"))
+def pso_main(max_iterations,particles_num,Mutaion_Type,crossover_Type,Selection_Type,w_start,c1,c2,w_end,mutation_rate,crossover_rate):
     swarm = [
         PSO.Particle(
             scheduler.generate_Schedule,
@@ -24,8 +23,9 @@ def pso_main(max_iterations, particles_num, w_start=0.9,w_end=0.4, c1=1, c2=2):
     global_best_position = global_best_particle.position.copy()
     global_best_fitness = global_best_particle.fitness
 
-    genetic = Genetic.Genetic()
+    genetic = Genetic.Genetic(mutation_rate,crossover_rate)
     iteration = 0
+    global_fitness_overtime=[]
     while global_best_fitness != 0 and iteration <= max_iterations:
         w = w_start - (w_start - w_end) * (iteration / max_iterations)
         print(f"Iteration {iteration + 1} - Best Fitness: {global_best_fitness}")
@@ -40,19 +40,33 @@ def pso_main(max_iterations, particles_num, w_start=0.9,w_end=0.4, c1=1, c2=2):
             particle.apply_velocity()
             ncr,nmr = genetic.update_rates(iteration,max_iterations)
             if ncr > random.random():
-                other_particle = genetic.tournament_selection(others)
-                new_particle = genetic.conflict_aware_crossover(particle.position, other_particle, base_schedule=particle.base_schedule)
+                match Selection_Type:
+                    case "Ranked":
+                        other_particle = genetic.ranked_selection(others)
+                    case "Tournament":
+                        other_particle = genetic.tournament_selection(others)
+                match crossover_Type:
+                    case "Single Point":
+                        new_particle = genetic.one_point_crossover(particle.position, other_particle)
+                    case "Two Point":
+                        new_particle = genetic.two_point_crossover(particle.position, other_particle)
+                    case "Uniform":
+                        new_particle = genetic.uniform_crossover(particle.position, other_particle)
+                    case "sector_based":
+                        new_particle = genetic.sector_based_crossover(particle.position, other_particle)
+                    case "Conflict Aware":
+                        new_particle = genetic.conflict_aware_crossover(particle.position, other_particle, base_schedule=particle.base_schedule)
                 particle.update(new_particle)
             
             if nmr > random.random():
-                match x:
-                    case 1:
+                match Mutaion_Type:
+                    case "WGWRGM":
                         new_particle = genetic.worst_gene_with_random_gene_mutation(particle.position,particle.base_schedule)
-                    case 2:
-                        new_particle = genetic.random_reinitialization_mutat1ion(particle.position, nmr)   
-                    case 3:
+                    case "random_reinitialization_M":
+                        new_particle = genetic.random_reinitialization_mutation(particle.position, nmr)   
+                    case "swap_class_assignments_M":
                         new_particle = genetic.swap_class_assignments_mutation(particle.position)
-                    case 4:
+                    case "field_mutation":
                         new_particle = genetic.field_mutation(particle.position)
                 particle.update(new_particle)
 
@@ -65,10 +79,11 @@ def pso_main(max_iterations, particles_num, w_start=0.9,w_end=0.4, c1=1, c2=2):
         for worst, best in zip(worst_particles, top_particles):
             worst.update(best.position)
 
-
         iteration = iteration + 1
+        global_fitness_overtime.append(global_best_fitness)
+
     best_schedule = scheduler.decode_Schedule(global_best_particle.base_schedule, global_best_position)
-    return best_schedule, global_best_fitness
+    return best_schedule, global_best_fitness,global_fitness_overtime
 
 if __name__ == "__main__":
     best_schedule, best_fitness = pso_main()
