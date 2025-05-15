@@ -9,7 +9,7 @@ random.seed(42)
 # random.seed(1)
 # random.seed(2)
 
-def pso_main(max_iterations, particles_num, w_start, c1, c2, w_end):
+def pso_main(max_iterations, particles_num, w_start, c1, c2, w_end, log_callback=None):
     swarm = [
         PSO.Particle(
             scheduler.generate_Schedule,
@@ -28,7 +28,7 @@ def pso_main(max_iterations, particles_num, w_start, c1, c2, w_end):
     global_fitness_overtime = []
     while global_best_fitness != 0 and iteration <= max_iterations:
         w = w_start - (w_start - w_end) * (iteration / max_iterations)
-        print(f"Iteration {iteration + 1} - Best Fitness: {global_best_fitness}")
+        log_callback(f"Iteration {iteration + 1} - Best Fitness: {global_best_fitness}")
 
         for particle in swarm:
             particle.set_velocity(w, c1, c2, global_best_position)
@@ -47,7 +47,8 @@ def pso_main(max_iterations, particles_num, w_start, c1, c2, w_end):
 
 
 
-def hybrid_main(max_iterations, particles_num, Mutation_Type, crossover_Type, Selection_Type, w_start, c1, c2, w_end, mutation_rate, crossover_rate, initialization_type="random"):
+def hybrid_main(max_iterations, particles_num, Mutation_Type, crossover_Type, Selection_Type, w_start, c1, c2, w_end,
+                mutation_rate, crossover_rate, initialization_type="random", log_callback=None):
     if initialization_type == "random":
         swarm = [
             PSO.Particle(
@@ -83,14 +84,14 @@ def hybrid_main(max_iterations, particles_num, Mutation_Type, crossover_Type, Se
     global_best_position = global_best_particle.position.copy()
     global_best_fitness = global_best_particle.fitness
 
-    genetic = Genetic.Genetic(mutation_rate,crossover_rate)
+    genetic = Genetic(mutation_rate,crossover_rate)
     iteration = 0
     global_fitness_overtime=[]
     while global_best_fitness != 0 and iteration <= max_iterations:
         w = w_start - (w_start - w_end) * (iteration / max_iterations)
-        print(f"Iteration {iteration + 1} - Best Fitness: {global_best_fitness}")
+        log_callback(f"Iteration {iteration + 1} - Best Fitness: {global_best_fitness}")
         if (iteration+1) % 10 == 0:
-                print(f"Rates — NCR: {ncr:.3f}, NMR: {nmr:.3f}")
+                log_callback(f"Rates — NCR: {ncr:.3f}, NMR: {nmr:.3f}")
 
         top_particles = sorted(swarm, key=lambda p: p.fitness, reverse=True)[:int(0.1 * particles_num)]
 
@@ -146,7 +147,8 @@ def hybrid_main(max_iterations, particles_num, Mutation_Type, crossover_Type, Se
     return best_schedule, global_best_fitness,global_fitness_overtime
 
 def genetic_main(max_generations, population_size, Mutation_Type, crossover_Type, Selection_Type,
-                mutation_rate, crossover_rate, initialization_type ="random",Survival_Type="elitism"):
+                mutation_rate, crossover_rate, initialization_type ="random",Survival_Type="elitism", log_callback=None):
+
 
     base_schedule = scheduler.generate_Schedule()
 
@@ -162,9 +164,9 @@ def genetic_main(max_generations, population_size, Mutation_Type, crossover_Type
     for generation in range(max_generations):
         ncr, nmr = genetic.update_rates(generation, max_generations)
 
-        print(f"Generation {generation + 1} - Best Fitness: {best_fitness:.3f}")
+        log_callback(f"Generation {generation + 1} - Best Fitness: {best_fitness:.3f}")
         if (generation + 1) % 10 == 0:
-            print(f"Rates — NCR: {ncr:.3f}, NMR: {nmr:.3f}")
+            log_callback(f"Rates — NCR: {ncr:.3f}, NMR: {nmr:.3f}")
 
         # Survival Selection
         if Survival_Type == "elitism":
@@ -243,14 +245,3 @@ def genetic_main(max_generations, population_size, Mutation_Type, crossover_Type
     return best_schedule, best_fitness, fitness_over_time
 
 
-
-
-if __name__ == "__main__":
-    best_schedule, best_fitness = pso_main()
-
-    print(f"\n✅ Best Fitness Achieved: {best_fitness}")
-    print("📅 Final Timetable:")
-    for cls in best_schedule:
-        print(f"Class ID {cls.get_id()} | Dept: {cls.get_dept().get_name()} | "
-            f"Course: {cls.get_course().get_name()} | Room: {cls.get_room().get_number()} | "
-            f"Time: {cls.get_meetingTime().get_time()} | Instructor: {cls.get_instructor().get_name()}")
