@@ -4,6 +4,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 import threading
 from main import genetic_main, pso_main, hybrid_main
+import random
 
 class TimetableOptimizerGUI:
     def __init__(self, root):
@@ -98,6 +99,8 @@ class TimetableOptimizerGUI:
 
     def call_algorithm(self, algorithm, params):
         import time
+        SEED = 42
+        random.seed(SEED)
         if algorithm == "GA":
             result = genetic_main(
             int(params["max_generations"]), int(params["population_size"]),
