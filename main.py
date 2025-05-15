@@ -71,7 +71,7 @@ def hybrid_main(max_iterations, particles_num, Mutation_Type, crossover_Type, Se
     elif initialization_type == "weighted":
         swarm = [
             PSO.Particle(
-                scheduler.generate_weighted_schedule,
+                scheduler.Weighted_generate_Schedule,
                 scheduler.encode_Schedule,
                 scheduler.decode_Schedule,
                 scheduler.fitness_function
