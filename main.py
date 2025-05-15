@@ -83,7 +83,7 @@ def hybrid_main(max_iterations, particles_num, Mutation_Type, crossover_Type, Se
     global_best_position = global_best_particle.position.copy()
     global_best_fitness = global_best_particle.fitness
 
-    genetic = Genetic.Genetic(mutation_rate,crossover_rate)
+    genetic = Genetic(mutation_rate,crossover_rate)
     iteration = 0
     global_fitness_overtime=[]
     while global_best_fitness != 0 and iteration <= max_iterations:
