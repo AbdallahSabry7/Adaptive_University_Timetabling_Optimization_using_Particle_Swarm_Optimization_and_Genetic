@@ -56,7 +56,7 @@ class TimetableOptimizerGUI:
         main_frame = ttk.Frame(parent)
         main_frame.pack(side='top', fill='both', expand=True)
 
-        # --- Top: Control Inputs ---
+        
         controls_frame = ttk.Frame(main_frame)
         controls_frame.pack(side='top', fill='x', pady=10)
         self.entries[algorithm] = {}
@@ -101,7 +101,7 @@ class TimetableOptimizerGUI:
             row=len(fields), column=0, columnspan=2, pady=10
         )
 
-        # --- Bottom: Subtabs ---
+        
         subtabs = ttk.Notebook(main_frame)
         subtabs.pack(fill='both', expand=True)
         self.subtabs[algorithm] = subtabs
@@ -137,6 +137,8 @@ class TimetableOptimizerGUI:
         thread.start()
 
     def call_algorithm(self, algorithm, params):
+        def logger(msg):
+            self.log(algorithm, msg)
         import time
         SEED = 42
         random.seed(SEED)
@@ -145,20 +147,22 @@ class TimetableOptimizerGUI:
             int(params["max_generations"]), int(params["population_size"]),
             params["Mutation_Type"], params["crossover_Type"], params["Selection_Type"],
             float(params["mutation_rate"]), float(params["crossover_rate"]), params["initialization_type"],
-            params["Survival_Type"]
+            params["Survival_Type"], log_callback=logger
         )
 
         elif algorithm == "PSO":
             result = pso_main(
                 int(params["max_iterations"]), int(params["particles_num"]),
-                float(params["w_start"]), float(params["c1"]), float(params["c2"]), float(params["w_end"])
+                float(params["w_start"]), float(params["c1"]), float(params["c2"]), float(params["w_end"]),
+                log_callback=logger
             )
         elif algorithm == "Hybrid":
             result = hybrid_main(
                 int(params["max_iterations"]), int(params["particles_num"]),
                 params["Mutation_Type"], params["crossover_Type"], params["Selection_Type"],
                 float(params["w_start"]), float(params["c1"]), float(params["c2"]), float(params["w_end"]),
-                float(params["mutation_rate"]), float(params["crossover_rate"]), params["initialization_type"]
+                float(params["mutation_rate"]), float(params["crossover_rate"]), params["initialization_type"],
+                log_callback=logger
             )
         schedule, best_fitness, fitness_over_time = result
         schedule, best_fitness, fitness_over_time = result
@@ -186,7 +190,6 @@ class TimetableOptimizerGUI:
     def sort_column(self, tree, col):
         data = [(tree.set(child, col), child) for child in tree.get_children('')]
 
-        # Detect if sorting numerically or lexically
         try:
             data.sort(key=lambda t: float(t[0]))
         except ValueError:
@@ -199,7 +202,6 @@ class TimetableOptimizerGUI:
         for index, (_, child) in enumerate(data):
             tree.move(child, '', index)
 
-        # Update column headers to show sort direction
         for c in tree["columns"]:
             direction = "▲" if not self._sort_state.get(c, False) else "▼"
             tree.heading(c, text=f"{c} {direction if c == col else '▲▼'}",
