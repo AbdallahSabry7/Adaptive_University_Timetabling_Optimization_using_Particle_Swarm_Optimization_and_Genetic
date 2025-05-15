@@ -147,7 +147,8 @@ def hybrid_main(max_iterations, particles_num, Mutation_Type, crossover_Type, Se
     return best_schedule, global_best_fitness,global_fitness_overtime
 
 def genetic_main(max_generations, population_size, Mutation_Type, crossover_Type, Selection_Type,
-                 mutation_rate, crossover_rate, initialization_type ="random",Survival_Type="elitism", log_callback=None):
+                mutation_rate, crossover_rate, initialization_type ="random",Survival_Type="elitism", log_callback=None):
+
 
     base_schedule = scheduler.generate_Schedule()
 
