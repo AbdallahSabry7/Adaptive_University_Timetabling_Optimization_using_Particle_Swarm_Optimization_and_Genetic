@@ -71,7 +71,7 @@ def hybrid_main(max_iterations, particles_num, Mutation_Type, crossover_Type, Se
     elif initialization_type == "weighted":
         swarm = [
             PSO.Particle(
-                scheduler.generate_weighted_schedule,
+                scheduler.Weighted_generate_Schedule,
                 scheduler.encode_Schedule,
                 scheduler.decode_Schedule,
                 scheduler.fitness_function
@@ -146,7 +146,7 @@ def hybrid_main(max_iterations, particles_num, Mutation_Type, crossover_Type, Se
     return best_schedule, global_best_fitness,global_fitness_overtime
 
 def genetic_main(max_generations, population_size, Mutation_Type, crossover_Type, Selection_Type,
-                 mutation_rate, crossover_rate, initialization_type ="random",Survival_Type="elitism"):
+                mutation_rate, crossover_rate, initialization_type ="random",Survival_Type="elitism"):
 
     base_schedule = scheduler.generate_Schedule()
 
@@ -246,22 +246,11 @@ def genetic_main(max_generations, population_size, Mutation_Type, crossover_Type
 
 
 if __name__ == "__main__":
-    best_schedule, best_fitness, global_fitness_overtime = genetic_main(
-        max_generations=500,
-        population_size=50,
-        Mutation_Type="field_mutation",
-        crossover_Type="Conflict Aware",
-        Selection_Type="Tournament",
-        mutation_rate=0.3,
-        crossover_rate=0.9,
-        initialization_type="random",
-        Survival_Type="generational"
-        
-    )
+    best_schedule, best_fitness = pso_main()
 
     print(f"\n✅ Best Fitness Achieved: {best_fitness}")
     print("📅 Final Timetable:")
     for cls in best_schedule:
         print(f"Class ID {cls.get_id()} | Dept: {cls.get_dept().get_name()} | "
-              f"Course: {cls.get_course().get_name()} | Room: {cls.get_room().get_number()} | "
-              f"Time: {cls.get_meetingTime().get_time()} | Instructor: {cls.get_instructor().get_name()}")
+            f"Course: {cls.get_course().get_name()} | Room: {cls.get_room().get_number()} | "
+            f"Time: {cls.get_meetingTime().get_time()} | Instructor: {cls.get_instructor().get_name()}")

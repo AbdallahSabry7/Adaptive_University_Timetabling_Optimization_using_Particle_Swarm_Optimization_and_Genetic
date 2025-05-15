@@ -5,16 +5,6 @@ import logging
 import heapq
 
 
-# # Configure logging
-# logging.basicConfig(
-#     filename='fitness_log.txt',   # Log file name
-#     filemode='w',                 # Overwrite each run
-#     level=logging.INFO,           # Could also use DEBUG
-#     format='%(levelname)s:%(message)s'
-# )
-
-
-
 def generate_Schedule():
     classNumb = 0
     schedule = []
