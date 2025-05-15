@@ -5,8 +5,8 @@ import scheduler_utils as scheduler
 from Genetic import Genetic
 import random
 import copy
-random.seed(42)
-# random.seed(1)
+# random.seed(42)
+random.seed(1)
 # random.seed(2)
 
 def pso_main(max_iterations, particles_num, w_start, c1, c2, w_end, log_callback=None):
@@ -57,7 +57,7 @@ def hybrid_main(max_iterations, particles_num, Mutation_Type, crossover_Type, Se
                 scheduler.decode_Schedule,
                 scheduler.fitness_function
             )
-            for _ in range(particles_num)
+            for _ in range(particles_num) 
         ]
     elif initialization_type == "heuristic":
         swarm = [
