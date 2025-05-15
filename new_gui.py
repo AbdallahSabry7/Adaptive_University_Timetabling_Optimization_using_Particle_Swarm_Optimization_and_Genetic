@@ -50,7 +50,7 @@ class TimetableOptimizerGUI:
     def create_hybrid_tab(self):
         self.create_controls(
             self.hybrid_tab, "Hybrid",
-            ["max_iterations", "particles_num", "Mutation_Type", "crossover_Type", "Selection_Type", "w_start", "c1", "c2", "w_end", "mutation_rate", "crossover_rate", "initialization_type", "Survival_Type"]
+            ["max_iterations", "particles_num", "Mutation_Type", "crossover_Type", "Selection_Type", "w_start", "c1", "c2", "w_end", "mutation_rate", "crossover_rate", "initialization_type"]
         )
 
     def create_controls(self, parent, algorithm, fields):
@@ -161,8 +161,7 @@ class TimetableOptimizerGUI:
                 int(params["max_iterations"]), int(params["particles_num"]),
                 params["Mutation_Type"], params["crossover_Type"], params["Selection_Type"],
                 float(params["w_start"]), float(params["c1"]), float(params["c2"]), float(params["w_end"]),
-                float(params["mutation_rate"]), float(params["crossover_rate"]), params["initialization_type"],
-                params["Survival_Type"], log_callback=logger
+                float(params["mutation_rate"]), float(params["crossover_rate"]), params["initialization_type"], log_callback=logger
             )
 
         schedule, best_fitness, fitness_over_time = result
