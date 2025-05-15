@@ -38,7 +38,7 @@ class TimetableOptimizerGUI:
     def create_ga_tab(self):
         self.create_controls(
             self.ga_tab, "GA",
-            ["max_generations", "population_size", "Mutation_Type", "crossover_Type", "Selection_Type", "mutation_rate", "crossover_rate", "Survival_Type","initialization_type"]
+            ["max_generations", "population_size", "Mutation_Type", "crossover_Type", "Selection_Type", "mutation_rate", "crossover_rate", "Survival_Type", "initialization_type"]
         )
 
     def create_pso_tab(self):
@@ -50,13 +50,13 @@ class TimetableOptimizerGUI:
     def create_hybrid_tab(self):
         self.create_controls(
             self.hybrid_tab, "Hybrid",
-            ["max_iterations", "particles_num", "Mutation_Type", "crossover_Type", "Selection_Type", "w_start", "c1", "c2", "w_end", "mutation_rate", "crossover_rate","initialization_type", "Survival_Type"]
+            ["max_iterations", "particles_num", "Mutation_Type", "crossover_Type", "Selection_Type", "w_start", "c1", "c2", "w_end", "mutation_rate", "crossover_rate", "initialization_type", "Survival_Type"]
         )
+
     def create_controls(self, parent, algorithm, fields):
         main_frame = ttk.Frame(parent)
         main_frame.pack(side='top', fill='both', expand=True)
 
-        
         controls_frame = ttk.Frame(main_frame)
         controls_frame.pack(side='top', fill='x', pady=10)
         self.entries[algorithm] = {}
@@ -68,7 +68,7 @@ class TimetableOptimizerGUI:
             "Survival_Type": ["elitism", "generational"],
             "initialization_type": ["random", "heuristic", "weighted"]
         }
-        
+
         default_values = {
             "max_generations": "100",
             "population_size": "50",
@@ -82,38 +82,40 @@ class TimetableOptimizerGUI:
             "c2": "2.0"
         }
 
+        row = 0
+        col = 0
+        for field in fields:
+            ttk.Label(controls_frame, text=field).grid(row=row, column=col*2, sticky='e', padx=5, pady=5)
 
-        for i, field in enumerate(fields):
-            ttk.Label(controls_frame, text=field).grid(row=i, column=0, sticky='e', padx=5, pady=2)
             if field in options:
-                combo = ttk.Combobox(controls_frame, values=options[field], state="readonly")
-                combo.current(0)
-                combo.grid(row=i, column=1, padx=5, pady=2)
-                self.entries[algorithm][field] = combo
+                widget = ttk.Combobox(controls_frame, values=options[field], state="readonly", width=15)
+                widget.current(0)
             else:
-                entry = ttk.Entry(controls_frame)
-                entry.insert(0, default_values.get(field, ""))  # Insert default if available
-                entry.grid(row=i, column=1, padx=5, pady=2)
-                self.entries[algorithm][field] = entry
+                widget = ttk.Entry(controls_frame, width=18)
+                widget.insert(0, default_values.get(field, ""))
 
+            widget.grid(row=row, column=col*2+1, padx=5, pady=5)
+            self.entries[algorithm][field] = widget
+
+            col += 1
+            if col == 3:
+                row += 1
+                col = 0
 
         ttk.Button(controls_frame, text="Run Optimization", command=lambda: self.run_optimization(algorithm)).grid(
-            row=len(fields), column=0, columnspan=2, pady=10
+            row=row+1, column=0, columnspan=6, pady=10
         )
 
-        
         subtabs = ttk.Notebook(main_frame)
         subtabs.pack(fill='both', expand=True)
         self.subtabs[algorithm] = subtabs
 
-        # Schedule Tab
         schedule_tab = ttk.Frame(subtabs)
         subtabs.add(schedule_tab, text='Schedule')
         schedule_text = tk.Text(schedule_tab)
         schedule_text.pack(fill='both', expand=True)
         self.schedule_display[algorithm] = schedule_text
 
-        # Plot Tab
         plot_tab = ttk.Frame(subtabs)
         subtabs.add(plot_tab, text='Fitness Plot')
         fig, ax = plt.subplots(figsize=(5, 3))
@@ -123,7 +125,6 @@ class TimetableOptimizerGUI:
         self.axes[algorithm] = ax
         self.canvases[algorithm] = canvas
 
-        # Log Tab
         log_tab = ttk.Frame(subtabs)
         subtabs.add(log_tab, text='Log')
         log_text = tk.Text(log_tab, height=10)
@@ -144,12 +145,11 @@ class TimetableOptimizerGUI:
         random.seed(SEED)
         if algorithm == "GA":
             result = genetic_main(
-            int(params["max_generations"]), int(params["population_size"]),
-            params["Mutation_Type"], params["crossover_Type"], params["Selection_Type"],
-            float(params["mutation_rate"]), float(params["crossover_rate"]), params["initialization_type"],
-            params["Survival_Type"], log_callback=logger
-        )
-
+                int(params["max_generations"]), int(params["population_size"]),
+                params["Mutation_Type"], params["crossover_Type"], params["Selection_Type"],
+                float(params["mutation_rate"]), float(params["crossover_rate"]), params["initialization_type"],
+                params["Survival_Type"], log_callback=logger
+            )
         elif algorithm == "PSO":
             result = pso_main(
                 int(params["max_iterations"]), int(params["particles_num"]),
@@ -162,14 +162,13 @@ class TimetableOptimizerGUI:
                 params["Mutation_Type"], params["crossover_Type"], params["Selection_Type"],
                 float(params["w_start"]), float(params["c1"]), float(params["c2"]), float(params["w_end"]),
                 float(params["mutation_rate"]), float(params["crossover_rate"]), params["initialization_type"],
-                log_callback=logger
+                params["Survival_Type"], log_callback=logger
             )
-        schedule, best_fitness, fitness_over_time = result
+
         schedule, best_fitness, fitness_over_time = result
         self.plot_fitness(algorithm, fitness_over_time)
         self.log(algorithm, f"{algorithm} optimization completed. Best Fitness: {best_fitness:.4f}")
         self.display_schedule(algorithm, schedule)
-
 
     def plot_fitness(self, algorithm, fitness):
         ax = self.axes[algorithm]
@@ -186,7 +185,7 @@ class TimetableOptimizerGUI:
         if text_widget:
             text_widget.insert(tk.END, message + '\n')
             text_widget.see(tk.END)
-            
+
     def sort_column(self, tree, col):
         data = [(tree.set(child, col), child) for child in tree.get_children('')]
 
@@ -207,8 +206,6 @@ class TimetableOptimizerGUI:
             tree.heading(c, text=f"{c} {direction if c == col else '▲▼'}",
                         command=lambda _col=c: self.sort_column(tree, _col))
 
-
-            
     def display_schedule(self, algorithm, schedule):
         if algorithm in self.schedule_display:
             old_widget = self.schedule_display[algorithm]
@@ -221,12 +218,10 @@ class TimetableOptimizerGUI:
         tree.pack(fill='both', expand=True, padx=2, pady=2)
         self.schedule_display[algorithm] = tree
 
-        self._sort_state = {}  # Track sort direction for each column
+        self._sort_state = {}
 
         style = ttk.Style()
         style.theme_use("default")
-
-        # --- Treeview style with visible column borders ---
         style.configure("Custom.Treeview",
             background="white",
             foreground="black",
@@ -236,22 +231,15 @@ class TimetableOptimizerGUI:
             borderwidth=1,
             relief="solid"
         )
-
         style.map('Custom.Treeview', background=[('selected', '#ececec')])
-
-        # --- Header style ---
         style.configure("Custom.Treeview.Heading",
             font=("Helvetica", 10, "bold"),
-            background="#cfd8dc",  # Light grey-blue
+            background="#cfd8dc",
             foreground="black",
             borderwidth=1,
             relief="raised"
         )
-
-        style.layout("Custom.Treeview", [
-            ("Treeview.treearea", {'sticky': 'nswe'})
-        ])
-
+        style.layout("Custom.Treeview", [("Treeview.treearea", {'sticky': 'nswe'})])
 
         columns = ("Dept", "Course", "Instructor", "Room", "Time")
         for col in columns:
@@ -278,10 +266,6 @@ class TimetableOptimizerGUI:
                 ))
             except Exception as e:
                 self.log(algorithm, f"[Error displaying class: {e}]")
-
-
-
-
 
 if __name__ == "__main__":
     root = tk.Tk()
