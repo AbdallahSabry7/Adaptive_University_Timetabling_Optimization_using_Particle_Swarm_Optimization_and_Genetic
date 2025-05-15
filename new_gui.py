@@ -35,7 +35,7 @@ class TimetableOptimizerGUI:
     def create_ga_tab(self):
         self.create_controls(
             self.ga_tab, "GA",
-            ["max_iterations", "population_size", "Mutation_Type", "crossover_Type", "Selection_Type", "mutation_rate", "crossover_rate", "survival_type","initialization_type"]
+            ["max_generations", "population_size", "Mutation_Type", "crossover_Type", "Selection_Type", "mutation_rate", "crossover_rate", "Survival_Type","initialization_type"]
         )
 
     def create_pso_tab(self):
@@ -47,7 +47,7 @@ class TimetableOptimizerGUI:
     def create_hybrid_tab(self):
         self.create_controls(
             self.hybrid_tab, "Hybrid",
-            ["max_iterations", "particles_num", "Mutation_Type", "crossover_Type", "Selection_Type", "w_start", "c1", "c2", "w_end", "mutation_rate", "crossover_rate","initialization_type"]
+            ["max_iterations", "particles_num", "Mutation_Type", "crossover_Type", "Selection_Type", "w_start", "c1", "c2", "w_end", "mutation_rate", "crossover_rate","initialization_type", "Survival_Type"]
         )
 
     def create_controls(self, parent, algorithm, fields):
@@ -60,7 +60,7 @@ class TimetableOptimizerGUI:
             "Mutation_Type": ["WGWRGM", "random_reinitialization_M", "swap_class_assignments_M", "field_mutation"],
             "crossover_Type": ["Single Point", "Two Point", "Uniform", "sector_based", "Conflict Aware"],
             "Selection_Type": ["Ranked", "Tournament"],
-            "survival_type": ["elitism", "tournament", "ranked", "generational"],
+            "Survival_Type": ["elitism", "generational"],
             "initialization_type": ["random", "heuristic", "weighted"]
         }
 
@@ -98,32 +98,29 @@ class TimetableOptimizerGUI:
 
     def call_algorithm(self, algorithm, params):
         import time
-        try:
-            if algorithm == "GA":
-                result = genetic_main(
-                int(params["max_iterations"]), int(params["population_size"]),
-                params["Mutation_Type"], params["crossover_Type"], params["Selection_Type"],
-                float(params["mutation_rate"]), float(params["crossover_rate"]),
-                params["survival_type"], params["initialization_type"]
-            )
+        if algorithm == "GA":
+            result = genetic_main(
+            int(params["max_generations"]), int(params["population_size"]),
+            params["Mutation_Type"], params["crossover_Type"], params["Selection_Type"],
+            float(params["mutation_rate"]), float(params["crossover_rate"]), params["initialization_type"],
+            params["Survival_Type"]
+        )
 
-            elif algorithm == "PSO":
-                result = pso_main(
-                    int(params["max_iterations"]), int(params["particles_num"]),
-                    float(params["w_start"]), float(params["c1"]), float(params["c2"]), float(params["w_end"])
-                )
-            elif algorithm == "Hybrid":
-                result = hybrid_main(
-                    int(params["max_iterations"]), int(params["particles_num"]),
-                    params["Mutation_Type"], params["crossover_Type"], params["Selection_Type"],
-                    float(params["w_start"]), float(params["c1"]), float(params["c2"]), float(params["w_end"]),
-                    float(params["mutation_rate"]), float(params["crossover_rate"]), params["initialization_type"]
-                )
-            schedule, best_fitness, fitness_over_time = result
-            self.plot_fitness(algorithm, fitness_over_time)
-            self.log(algorithm, f"{algorithm} optimization completed. Best Fitness: {best_fitness:.4f}")
-        except Exception as e:
-            self.log(algorithm, f"Error: {e}")
+        elif algorithm == "PSO":
+            result = pso_main(
+                int(params["max_iterations"]), int(params["particles_num"]),
+                float(params["w_start"]), float(params["c1"]), float(params["c2"]), float(params["w_end"])
+            )
+        elif algorithm == "Hybrid":
+            result = hybrid_main(
+                int(params["max_iterations"]), int(params["particles_num"]),
+                params["Mutation_Type"], params["crossover_Type"], params["Selection_Type"],
+                float(params["w_start"]), float(params["c1"]), float(params["c2"]), float(params["w_end"]),
+                float(params["mutation_rate"]), float(params["crossover_rate"]), params["initialization_type"]
+            )
+        schedule, best_fitness, fitness_over_time = result
+        self.plot_fitness(algorithm, fitness_over_time)
+        self.log(algorithm, f"{algorithm} optimization completed. Best Fitness: {best_fitness:.4f}")
 
     def plot_fitness(self, algorithm, fitness):
         ax = self.axes[algorithm]

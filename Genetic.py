@@ -13,33 +13,35 @@ class Genetic:
     def __iter__(self):
         pass
     
-    def generate_population(self, base_schedule, population_size,inilialization_type):
+    def generate_population(self, base_schedule, population_size, initialization_type = "random"):
         population = []
         for _ in range(population_size):
             schedule = scheduler.generate_Schedule()
             encoded_schedule = scheduler.encode_Schedule(schedule)
             fitness = scheduler.fitness_function(encoded_schedule, base_schedule)
-            if inilialization_type == "random":
+            if initialization_type == "random":
                 individual = PSO.Particle(
                     scheduler.generate_Schedule,
                     scheduler.encode_Schedule,
                     scheduler.decode_Schedule,
                     scheduler.fitness_function
                 )
-            elif inilialization_type == "heuristic":
+            elif initialization_type == "heuristic":
                 individual = PSO.Particle(
                     scheduler.generate_heuristic_schedule,
                     scheduler.encode_Schedule,
                     scheduler.decode_Schedule,
                     scheduler.fitness_function
                 )
-            elif inilialization_type == "weighted":
+            elif initialization_type == "weighted":
                 individual = PSO.Particle(
                     scheduler.Weighted_generate_Schedule,
                     scheduler.encode_Schedule,
                     scheduler.decode_Schedule,
                     scheduler.fitness_function
                 )
+            else:
+                raise ValueError(f"Unknown initialization_type: '{initialization_type}'")
             individual.position = encoded_schedule
             individual.fitness = fitness
             population.append(individual)
