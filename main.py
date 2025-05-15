@@ -146,7 +146,7 @@ def hybrid_main(max_iterations, particles_num, Mutation_Type, crossover_Type, Se
     return best_schedule, global_best_fitness,global_fitness_overtime
 
 def genetic_main(max_generations, population_size, Mutation_Type, crossover_Type, Selection_Type,
-                 mutation_rate, crossover_rate, initialization_type="random"):
+                 mutation_rate, crossover_rate, initialization_type="random",Survival_Type="elitism"):
 
     base_schedule = scheduler.generate_Schedule()
 
@@ -166,9 +166,13 @@ def genetic_main(max_generations, population_size, Mutation_Type, crossover_Type
         if (generation + 1) % 10 == 0:
             print(f"Rates — NCR: {ncr:.3f}, NMR: {nmr:.3f}")
 
-        elite_count = 2
-        elites = sorted(population, key=lambda p: p.fitness, reverse=True)[:elite_count]
-        new_population = elites[:]  # start with elite survivors
+        # Survival Selection
+        if Survival_Type == "elitism":
+            elite_count = 2
+            elites = sorted(population, key=lambda p: p.fitness, reverse=True)[:elite_count]
+            new_population = elites[:]  # start with elite survivors
+        if Survival_Type == "generational":
+            new_population = []
 
 
         while len(new_population) < population_size:
@@ -251,6 +255,7 @@ if __name__ == "__main__":
         mutation_rate=0.3,
         crossover_rate=0.9,
         initialization_type="random",
+        Survival_Type="generational"
         
     )
 
