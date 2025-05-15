@@ -64,16 +64,35 @@ class TimetableOptimizerGUI:
             "Survival_Type": ["elitism", "generational"],
             "initialization_type": ["random", "heuristic", "weighted"]
         }
+        
+        default_values = {
+            "max_generations": "100",
+            "population_size": "50",
+            "mutation_rate": "0.1",
+            "crossover_rate": "0.8",
+            "max_iterations": "100",
+            "particles_num": "30",
+            "w_start": "0.9",
+            "w_end": "0.4",
+            "c1": "1.5",
+            "c2": "1.5",
+            "Mutation_Type": "WGWRGM",
+            "crossover_Type": "Single Point",
+            "Selection_Type": "Ranked",
+            "Survival_Type": "elitism",
+            "initialization_type": "random"
+        }
 
         for i, field in enumerate(fields):
             ttk.Label(frame, text=field).grid(row=i, column=0, sticky='e', padx=5, pady=2)
             if field in options:
                 combo = ttk.Combobox(frame, values=options[field], state="readonly")
-                combo.current(0)
+                combo.set(default_values.get(field, options[field][0]))
                 combo.grid(row=i, column=1, padx=5, pady=2)
                 self.entries[algorithm][field] = combo
             else:
                 entry = ttk.Entry(frame)
+                entry.insert(0, default_values.get(field, ""))
                 entry.grid(row=i, column=1, padx=5, pady=2)
                 self.entries[algorithm][field] = entry
 

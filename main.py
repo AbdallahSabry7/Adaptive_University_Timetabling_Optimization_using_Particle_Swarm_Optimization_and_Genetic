@@ -256,7 +256,6 @@ if __name__ == "__main__":
         crossover_rate=0.9,
         initialization_type="random",
         Survival_Type="generational"
-        
     )
 
     print(f"\n✅ Best Fitness Achieved: {best_fitness}")
