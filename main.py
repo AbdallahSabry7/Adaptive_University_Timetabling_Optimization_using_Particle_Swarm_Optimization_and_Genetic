@@ -243,24 +243,3 @@ def genetic_main(max_generations, population_size, Mutation_Type, crossover_Type
     return best_schedule, best_fitness, fitness_over_time
 
 
-
-
-if __name__ == "__main__":
-    best_schedule, best_fitness, global_fitness_overtime = genetic_main(
-        max_generations=500,
-        population_size=50,
-        Mutation_Type="field_mutation",
-        crossover_Type="Conflict Aware",
-        Selection_Type="Tournament",
-        mutation_rate=0.3,
-        crossover_rate=0.9,
-        initialization_type="random",
-        Survival_Type="generational"
-    )
-
-    print(f"\n✅ Best Fitness Achieved: {best_fitness}")
-    print("📅 Final Timetable:")
-    for cls in best_schedule:
-        print(f"Class ID {cls.get_id()} | Dept: {cls.get_dept().get_name()} | "
-              f"Course: {cls.get_course().get_name()} | Room: {cls.get_room().get_number()} | "
-              f"Time: {cls.get_meetingTime().get_time()} | Instructor: {cls.get_instructor().get_name()}")

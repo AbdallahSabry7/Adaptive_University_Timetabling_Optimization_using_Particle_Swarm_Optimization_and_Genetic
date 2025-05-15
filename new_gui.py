@@ -109,6 +109,13 @@ class TimetableOptimizerGUI:
         self.figures[algorithm] = fig
         self.axes[algorithm] = ax
         self.canvases[algorithm] = canvas
+        
+        schedule_label = ttk.Label(parent, text="Best Schedule:")
+        schedule_label.pack(padx=10, anchor="w")
+        schedule_text = tk.Text(parent, height=10)
+        schedule_text.pack(fill='both', padx=10, pady=5)
+        self.schedule_display = self.schedule_display if hasattr(self, 'schedule_display') else {}
+        self.schedule_display[algorithm] = schedule_text
 
     def run_optimization(self, algorithm):
         self.log(algorithm, f"Starting {algorithm} optimization...")
@@ -141,8 +148,11 @@ class TimetableOptimizerGUI:
                 float(params["mutation_rate"]), float(params["crossover_rate"]), params["initialization_type"]
             )
         schedule, best_fitness, fitness_over_time = result
+        schedule, best_fitness, fitness_over_time = result
         self.plot_fitness(algorithm, fitness_over_time)
         self.log(algorithm, f"{algorithm} optimization completed. Best Fitness: {best_fitness:.4f}")
+        self.display_schedule(algorithm, schedule)
+
 
     def plot_fitness(self, algorithm, fitness):
         ax = self.axes[algorithm]
@@ -159,6 +169,18 @@ class TimetableOptimizerGUI:
         if text_widget:
             text_widget.insert(tk.END, message + '\n')
             text_widget.see(tk.END)
+            
+    def display_schedule(self, algorithm, schedule):
+        text_widget = self.schedule_display.get(algorithm)
+        if not text_widget:
+            return
+
+        text_widget.delete("1.0", tk.END)
+        for item in schedule:
+            line = f"Course: {item.get('course', '')}, Instructor: {item.get('instructor', '')}, " \
+                f"Room: {item.get('room', '')}, Day: {item.get('day', '')}, Time: {item.get('time', '')}\n"
+            text_widget.insert(tk.END, line)
+
 
 if __name__ == "__main__":
     root = tk.Tk()
