@@ -13,18 +13,33 @@ class Genetic:
     def __iter__(self):
         pass
     
-    def generate_population(self, base_schedule, population_size):
+    def generate_population(self, base_schedule, population_size,inilialization_type):
         population = []
         for _ in range(population_size):
             schedule = scheduler.generate_Schedule()
             encoded_schedule = scheduler.encode_Schedule(schedule)
             fitness = scheduler.fitness_function(encoded_schedule, base_schedule)
-            individual = PSO.Particle(
-                scheduler.generate_Schedule,
-                scheduler.encode_Schedule,
-                scheduler.decode_Schedule,
-                scheduler.fitness_function
-            )
+            if inilialization_type == "random":
+                individual = PSO.Particle(
+                    scheduler.generate_Schedule,
+                    scheduler.encode_Schedule,
+                    scheduler.decode_Schedule,
+                    scheduler.fitness_function
+                )
+            elif inilialization_type == "heuristic":
+                individual = PSO.Particle(
+                    scheduler.generate_heuristic_schedule,
+                    scheduler.encode_Schedule,
+                    scheduler.decode_Schedule,
+                    scheduler.fitness_function
+                )
+            elif inilialization_type == "weighted":
+                individual = PSO.Particle(
+                    scheduler.Weighted_generate_Schedule,
+                    scheduler.encode_Schedule,
+                    scheduler.decode_Schedule,
+                    scheduler.fitness_function
+                )
             individual.position = encoded_schedule
             individual.fitness = fitness
             population.append(individual)

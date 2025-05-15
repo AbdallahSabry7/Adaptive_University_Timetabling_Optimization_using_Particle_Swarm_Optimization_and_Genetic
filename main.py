@@ -2,12 +2,12 @@ import Data
 import models
 import PSO
 import scheduler_utils as scheduler
-import Genetic
+from Genetic import Genetic
 import random
 import copy
-# random.seed(42)
+random.seed(42)
 # random.seed(1)
-random.seed(2)
+# random.seed(2)
 
 def pso_main(max_iterations, particles_num, w_start, c1, c2, w_end):
     swarm = [
@@ -47,16 +47,37 @@ def pso_main(max_iterations, particles_num, w_start, c1, c2, w_end):
 
 
 
-def hybrid_main(max_iterations, particles_num, Mutation_Type, crossover_Type, Selection_Type, w_start, c1, c2, w_end, mutation_rate, crossover_rate):
-    swarm = [
-        PSO.Particle(
-            scheduler.generate_Schedule,
-            scheduler.encode_Schedule,
-            scheduler.decode_Schedule,
-            scheduler.fitness_function
-        )
-        for _ in range(particles_num)
-    ]
+def hybrid_main(max_iterations, particles_num, Mutation_Type, crossover_Type, Selection_Type, w_start, c1, c2, w_end, mutation_rate, crossover_rate, initialization_type="random"):
+    if initialization_type == "random":
+        swarm = [
+            PSO.Particle(
+                scheduler.generate_Schedule,
+                scheduler.encode_Schedule,
+                scheduler.decode_Schedule,
+                scheduler.fitness_function
+            )
+            for _ in range(particles_num)
+        ]
+    elif initialization_type == "heuristic":
+        swarm = [
+            PSO.Particle(
+                scheduler.generate_heuristic_schedule,
+                scheduler.encode_Schedule,
+                scheduler.decode_Schedule,
+                scheduler.fitness_function
+            )
+            for _ in range(particles_num)
+        ]
+    elif initialization_type == "weighted":
+        swarm = [
+            PSO.Particle(
+                scheduler.generate_weighted_schedule,
+                scheduler.encode_Schedule,
+                scheduler.decode_Schedule,
+                scheduler.fitness_function
+            )
+            for _ in range(particles_num)
+        ]
 
     global_best_particle = max(swarm, key=lambda p: p.fitness)
     global_best_position = global_best_particle.position.copy()
@@ -124,113 +145,118 @@ def hybrid_main(max_iterations, particles_num, Mutation_Type, crossover_Type, Se
     best_schedule = scheduler.decode_Schedule(global_best_particle.base_schedule, global_best_position)
     return best_schedule, global_best_fitness,global_fitness_overtime
 
+def genetic_main(max_generations, population_size, Mutation_Type, crossover_Type, Selection_Type,
+                 mutation_rate, crossover_rate, initialization_type="random"):
 
-def genetic_main(max_iterations, population_size, Mutation_Type, crossover_Type, Selection_Type, mutation_rate, crossover_rate, survival_type):
-    genetic = Genetic.Genetic(mutation_rate, crossover_rate)
     base_schedule = scheduler.generate_Schedule()
-    population = genetic.generate_population(base_schedule, population_size)
 
-    best_schedule = None
-    best_fitness = float('-inf')
-    global_fitness_overtime = []
-    iteration = 0
+    genetic = Genetic(mutation_rate, crossover_rate)
+    population = genetic.generate_population(base_schedule, population_size, initialization_type)
 
-    while iteration < max_iterations and best_fitness != 0:
-        
-        ncr, nmr = genetic.update_rates(iteration, max_iterations)
-        iteration = iteration + 1
-        
+    best_individual = max(population, key=lambda p: p.fitness)
+    best_fitness = best_individual.fitness
+    best_position = best_individual.position.copy()
 
-        for individual in population:
-            fitness = scheduler.fitness_function(individual.position, base_schedule)
-            if fitness > best_fitness:
-                best_fitness = fitness
-                best_schedule = individual
+    fitness_over_time = []
 
-        new_population = []
-        for individual in population:
-            others = [p for p in population if p is not individual]
+    for generation in range(max_generations):
+        ncr, nmr = genetic.update_rates(generation, max_generations)
+
+        print(f"Generation {generation + 1} - Best Fitness: {best_fitness:.3f}")
+        if (generation + 1) % 10 == 0:
+            print(f"Rates — NCR: {ncr:.3f}, NMR: {nmr:.3f}")
+
+        elite_count = 2
+        elites = sorted(population, key=lambda p: p.fitness, reverse=True)[:elite_count]
+        new_population = elites[:]  # start with elite survivors
+
+
+        while len(new_population) < population_size:
+            # Selection
+            match Selection_Type:
+                case "Ranked":
+                    parent1 = genetic.ranked_selection(population)
+                    parent2 = genetic.ranked_selection(population)
+                case "Tournament":
+                    parent1 = genetic.tournament_selection(population)
+                    parent2 = genetic.tournament_selection(population)
+
+            # Crossover
             if ncr > random.random():
-                match Selection_Type:
-                    case "Ranked":
-                        selected = genetic.ranked_selection(others)
-                    case "Tournament":
-                        selected = genetic.tournament_selection(others)
                 match crossover_Type:
                     case "Single Point":
-                        new_particle = genetic.one_point_crossover(individual.position, selected)
+                        child_position = genetic.one_point_crossover(parent1, parent2)
                     case "Two Point":
-                        new_particle = genetic.two_point_crossover(individual.position, selected)
+                        child_position = genetic.two_point_crossover(parent1, parent2)
                     case "Uniform":
-                        new_particle = genetic.uniform_crossover(individual.position, selected)
+                        child_position = genetic.uniform_crossover(parent1, parent2)
                     case "sector_based":
-                        new_particle = genetic.sector_based_crossover(individual.position, selected)
+                        child_position = genetic.sector_based_crossover(parent1, parent2)
                     case "Conflict Aware":
-                        new_particle = genetic.conflict_aware_crossover(individual.position, selected, base_schedule=individual.base_schedule)
-                        individual.update(new_particle)
-                new_population.append(individual)
+                        child_position = genetic.conflict_aware_crossover(parent1, parent2, base_schedule)
+                    case _:
+                        child_position = parent1.copy()
+            else:
+                child_position = parent1.copy()
 
-        for individual in new_population:
+            # Mutation
             if nmr > random.random():
                 match Mutation_Type:
                     case "WGWRGM":
-                        new_particle = genetic.worst_gene_with_random_gene_mutation(individual.position, individual.base_schedule)
+                        child_position = genetic.worst_gene_with_random_gene_mutation(child_position, base_schedule)
                     case "random_reinitialization_M":
-                        new_particle = genetic.random_reinitialization_mutation(individual.position, nmr)
+                        child_position = genetic.random_reinitialization_mutation(child_position, nmr)
                     case "swap_class_assignments_M":
-                        new_particle = genetic.swap_class_assignments_mutation(individual.position)
+                        child_position = genetic.swap_class_assignments_mutation(child_position)
                     case "field_mutation":
-                        new_particle = genetic.field_mutation(individual.position)
-                individual.update(new_particle)
+                        child_position = genetic.field_mutation(child_position)
 
-        combined = population + new_population
-        if survival_type == "elitism":
-            elite_count = max(1, int(0.1 * population_size))
-            elite_individuals = sorted(population, key=lambda x: x.fitness, reverse=True)[:elite_count]
-            worst_individuals_indices = sorted(range(len(new_population)), key=lambda i: new_population[i].fitness)[:elite_count]
-            for idx, elite in zip(worst_individuals_indices, elite_individuals):
-                new_population[idx] = copy.deepcopy(elite)
-        elif survival_type == "tournament":
-            tournament_size = 3
-            survivors = []
-            for _ in range(population_size):
-                selected = random.sample(combined, tournament_size)
-                winner = max(selected, key=lambda x: x.fitness)
-                survivors.append(copy.deepcopy(winner))
-            new_population = survivors
-        elif survival_type == "ranked":
-            sorted_population = sorted(combined, key=lambda x: x.fitness, reverse=True)
-            probabilities = [1 / (i + 1) for i in range(len(sorted_population))]
-            total = sum(probabilities)
-            probabilities = [p / total for p in probabilities]
-            new_population = random.choices(sorted_population, weights=probabilities, k=population_size)
-        elif survival_type == "generational":
-            new_population = sorted(new_population, key=lambda x: x.fitness, reverse=True)[:population_size]
-                
-
+            # Fitness evaluation
+            child = PSO.Particle(
+                lambda: scheduler.generate_Schedule(),
+                scheduler.encode_Schedule,
+                scheduler.decode_Schedule,
+                scheduler.fitness_function
+            )
+            child.position = child_position
+            child.fitness = scheduler.fitness_function(child_position, base_schedule)
+            new_population.append(child)
 
         population = new_population
-        print(f"Iteration {iteration + 1} - Best Fitness: {best_fitness}")
-        global_fitness_overtime.append(best_fitness)
 
-    best_schedule = scheduler.decode_Schedule(best_schedule.base_schedule, best_schedule.position)
-    return best_schedule, best_fitness, global_fitness_overtime
+        current_best = max(population, key=lambda p: p.fitness)
+        if current_best.fitness > best_fitness:
+            best_fitness = current_best.fitness
+            best_position = current_best.position.copy()
+            best_individual = current_best
+
+        fitness_over_time.append(best_fitness)
+
+        if best_fitness == 0:
+            break
+
+    best_schedule = scheduler.decode_Schedule(base_schedule, best_position)
+    return best_schedule, best_fitness, fitness_over_time
+
+
 
 
 if __name__ == "__main__":
     best_schedule, best_fitness, global_fitness_overtime = genetic_main(
-        max_iterations=100,
+        max_generations=500,
         population_size=50,
-        Mutation_Type="WGWRGM",
-        crossover_Type="Single Point",
+        Mutation_Type="field_mutation",
+        crossover_Type="Conflict Aware",
         Selection_Type="Tournament",
         mutation_rate=0.3,
-        crossover_rate=0.8
+        crossover_rate=0.9,
+        initialization_type="random",
+        
     )
 
     print(f"\n✅ Best Fitness Achieved: {best_fitness}")
     print("📅 Final Timetable:")
     for cls in best_schedule:
         print(f"Class ID {cls.get_id()} | Dept: {cls.get_dept().get_name()} | "
-            f"Course: {cls.get_course().get_name()} | Room: {cls.get_room().get_number()} | "
-            f"Time: {cls.get_meetingTime().get_time()} | Instructor: {cls.get_instructor().get_name()}")
+              f"Course: {cls.get_course().get_name()} | Room: {cls.get_room().get_number()} | "
+              f"Time: {cls.get_meetingTime().get_time()} | Instructor: {cls.get_instructor().get_name()}")
