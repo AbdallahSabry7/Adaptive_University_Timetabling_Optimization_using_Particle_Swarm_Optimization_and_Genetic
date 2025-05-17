@@ -1,10 +1,10 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import matplotlib.pyplot as plt
+from tkinter import ttk
+from PIL import Image, ImageTk
 import threading
-from main import genetic_main, pso_main, hybrid_main
-import random
+import test_combinations
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class TimetableOptimizerGUI:
     def __init__(self, root):
@@ -34,6 +34,45 @@ class TimetableOptimizerGUI:
         self.create_ga_tab()
         self.create_pso_tab()
         self.create_hybrid_tab()
+
+        test_button = tk.Button(root, text="Run Parameter Tests", command=self.run_tests)
+        test_button.pack()
+
+        self.test_log = tk.Text(root, height=10)
+        self.test_log.pack(fill='x')
+
+        self.plot_label = tk.Label(root)
+        self.plot_label.pack(fill='both', expand=True, pady=10)
+
+    def log_from_gui(self, message):
+        def append():
+            self.test_log.insert(tk.END, message + "\n")
+            self.test_log.see(tk.END)
+        self.root.after(0, append)
+
+    def run_tests(self):
+        def task():
+            results, fig = test_combinations.test_parameter_combinations(log_callback=self.log_from_gui)
+            self.root.after(100, lambda: self.display_test_plot(fig))
+
+        threading.Thread(target=task, daemon=True).start()
+
+
+    def display_test_plot(self, fig):
+        fig.savefig('temp_plot.png')
+        img = Image.open('temp_plot.png')
+        img = img.resize((800, 600), Image.Resampling.LANCZOS)
+        photo = ImageTk.PhotoImage(img)
+        
+        if hasattr(self, 'test_plot_label'):
+            self.test_plot_label.config(image=photo)
+            self.test_plot_label.image = photo
+        else:
+            self.test_plot_label = tk.Label(self.root, image=photo)
+            self.test_plot_label.image = photo
+            self.test_plot_label.pack()
+
+
 
     def create_ga_tab(self):
         self.create_controls(
@@ -140,10 +179,11 @@ class TimetableOptimizerGUI:
     def call_algorithm(self, algorithm, params):
         def logger(msg):
             self.log(algorithm, msg)
-        import time
-        SEED = 42
+        import random
+        SEED = 2
         random.seed(SEED)
         if algorithm == "GA":
+            from main import genetic_main
             result = genetic_main(
                 int(params["max_generations"]), int(params["population_size"]),
                 params["Mutation_Type"], params["crossover_Type"], params["Selection_Type"],
@@ -151,18 +191,20 @@ class TimetableOptimizerGUI:
                 params["Survival_Type"], log_callback=logger
             )
         elif algorithm == "PSO":
+            from main import pso_main
             result = pso_main(
                 int(params["max_iterations"]), int(params["particles_num"]),
                 float(params["w_start"]), float(params["c1"]), float(params["c2"]), float(params["w_end"]),
                 log_callback=logger
             )
         elif algorithm == "Hybrid":
+            from main import hybrid_main
             result = hybrid_main(
                 int(params["max_iterations"]), int(params["particles_num"]),
                 params["Mutation_Type"], params["crossover_Type"], params["Selection_Type"],
                 float(params["w_start"]), float(params["c1"]), float(params["c2"]), float(params["w_end"]),
                 float(params["mutation_rate"]), float(params["crossover_rate"]), params["initialization_type"],
-                params["Survival_Type"], log_callback=logger
+                log_callback=logger
             )
 
         schedule, best_fitness, fitness_over_time = result
@@ -188,28 +230,28 @@ class TimetableOptimizerGUI:
 
     def sort_column(self, tree, col):
         data = [(tree.set(child, col), child) for child in tree.get_children('')]
-
         try:
             data.sort(key=lambda t: float(t[0]))
         except ValueError:
             data.sort(key=lambda t: t[0])
-
         reverse = self._sort_state.get(col, False)
-        data.reverse() if reverse else None
+        if reverse:
+            data.reverse()
         self._sort_state[col] = not reverse
-
         for index, (_, child) in enumerate(data):
             tree.move(child, '', index)
-
         for c in tree["columns"]:
             direction = "▲" if not self._sort_state.get(c, False) else "▼"
             tree.heading(c, text=f"{c} {direction if c == col else '▲▼'}",
                         command=lambda _col=c: self.sort_column(tree, _col))
 
     def display_schedule(self, algorithm, schedule):
-        if algorithm in self.schedule_display:
-            old_widget = self.schedule_display[algorithm]
-            old_widget.destroy()
+        # Remove old widget if any
+        if algorithm in self.schedule_display and isinstance(self.schedule_display[algorithm], tk.Widget):
+            try:
+                self.schedule_display[algorithm].destroy()
+            except Exception:
+                pass
 
         parent_tab = self.subtabs[algorithm].nametowidget(self.subtabs[algorithm].tabs()[0])
         tree = ttk.Treeview(parent_tab, columns=("Dept", "Course", "Instructor", "Room", "Time"),
@@ -271,3 +313,4 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = TimetableOptimizerGUI(root)
     root.mainloop()
+

@@ -5,9 +5,6 @@ import scheduler_utils as scheduler
 from Genetic import Genetic
 import random
 import copy
-random.seed(42)
-# random.seed(1)
-# random.seed(2)
 
 def pso_main(max_iterations, particles_num, w_start, c1, c2, w_end, log_callback=None):
     swarm = [
@@ -89,9 +86,11 @@ def hybrid_main(max_iterations, particles_num, Mutation_Type, crossover_Type, Se
     global_fitness_overtime=[]
     while global_best_fitness != 0 and iteration <= max_iterations:
         w = w_start - (w_start - w_end) * (iteration / max_iterations)
-        log_callback(f"Iteration {iteration + 1} - Best Fitness: {global_best_fitness}")
-        if (iteration+1) % 10 == 0:
+        if log_callback:
+            log_callback(f"Iteration {iteration + 1} - Best Fitness: {global_best_fitness}")
+            if (iteration+1) % 10 == 0:
                 log_callback(f"Rates — NCR: {ncr:.3f}, NMR: {nmr:.3f}")
+
 
         top_particles = sorted(swarm, key=lambda p: p.fitness, reverse=True)[:int(0.1 * particles_num)]
 
