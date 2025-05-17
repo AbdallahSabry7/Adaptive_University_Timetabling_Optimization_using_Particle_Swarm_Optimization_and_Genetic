@@ -1,0 +1,80 @@
+Adaptive University Timetabling Optimization using Particle Swarm Optimization and Genetic Algorithm
+
+Overview
+
+This project implements an adaptive hybrid approach for solving the University Timetabling Problem (UTP) by combining Particle Swarm Optimization (PSO) and Genetic Algorithm (GA) techniques. The goal is to generate feasible and optimized timetables that satisfy various constraints such as class schedules, room capacities, lecturer availability, and student groups, while minimizing conflicts and maximizing resource utilization.
+
+---
+
+Features
+
+- Hybrid Optimization: Combines PSO's exploration capabilities with GA's exploitation and genetic diversity to improve convergence speed and solution quality.
+- Adaptive Parameter Control: Allows dynamic adjustment of algorithm parameters based on performance during runtime.
+- Custom Mutation Operators: Implements specialized mutation methods such as Swap Gene Mutation and Random Reinitialization Mutation to enhance GA.
+- Flexible Selection Methods: Supports Tournament and Ranked selection methods with variants like weighted and heuristic approaches.
+- User-Friendly Interface: Provides a GUI for choosing the optimization method (PSO, GA, or hybrid) and tuning parameters.
+- Scalable: Can handle real-world timetabling datasets with multiple constraints.
+
+---
+
+Problem Description
+
+University timetabling involves scheduling lectures, rooms, and instructors in time slots without conflicts. It is a complex combinatorial optimization problem with hard constraints (e.g., no overlapping classes for the same student group) and soft constraints (e.g., preferred time slots).
+
+---
+
+Technologies & Tools
+
+- Python 3.x
+- Numpy
+- Matplotlib (for plotting)
+- Tkinter (for GUI)
+- Custom implementation of PSO and GA algorithms
+
+---
+
+Usage
+
+You can clone the repository, install dependencies, and run the program through a user-friendly GUI where you select the optimization algorithm, set parameters, load datasets, and start optimization to view the generated timetables and statistics.
+
+---
+
+Project Structure
+
+- data.py: Sample datasets and input files
+- genetic.py: Source code for  GA
+- new_gui.py: GUI implementation files
+- scheduler_utils: schedule initialization and relevant functions
+- pso.py: Source code for PSO
+- main.py: contains the main loop for PSO,GA, and hybrid algorithms
+- test_combinations.py : used to test different parameters
+- README.md: This documentation file
+
+---
+
+Key Concepts
+
+Particle Swarm Optimization (PSO)
+
+- Particles represent candidate timetables.
+- Each particle moves through the search space influenced by its own best position and the global best.
+- Adaptive inertia and velocity control improve search efficiency.
+
+Genetic Algorithm (GA)
+
+- Population-based approach with crossover, mutation, and selection operators.
+- Implements custom mutations (Swap Gene Mutation, Random Reinitialization).
+- Tournament and Ranked selection methods with weighted and heuristic variants.
+
+Hybrid Approach
+
+- Combines PSO and GA phases to balance exploration and exploitation.
+- Switches or blends methods based on convergence criteria.
+
+---
+
+Results & Performance
+
+The hybrid method shows improved convergence and better solution quality compared to standalone PSO or GA. Detailed performance metrics and visualization plots are included in the results folder.
+
+---
